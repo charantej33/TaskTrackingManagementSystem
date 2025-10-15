@@ -1,138 +1,160 @@
-[README.md](https://github.com/user-attachments/files/22920731/README.md)
-# TaskMaster API
+# 🧩 Task Tracking and Management System (Spring Boot)
 
-Welcome to the official backend repository for **TaskMaster**, a powerful task tracking and management application designed for seamless team collaboration. This document provides all the necessary information to understand, run, and contribute to the project.
-
----
-
-## 🧭 Overview
-
-**TaskMaster** is a robust backend system built with **Java** and **Spring Boot** that facilitates organization and productivity within teams.  
-It allows users to create, assign, and track tasks, collaborate through comments and attachments, and manage projects efficiently.  
-The system is built on a **secure, stateless authentication model** using **JSON Web Tokens (JWT)**.
+A backend system built with **Spring Boot**, **Java 21**, and **MySQL** that enables teams and users to **create, assign, and track tasks**, manage **projects/teams**, and collaborate with comments and attachments.  
+This project demonstrates **secure authentication**, **task workflows**, and **modular microservice-ready architecture** — implemented locally (no external deployment).
 
 ---
 
-## ✨ Features
+## 🚀 Features
 
-### 🧍‍♂️ User Management & Security
-- ✅ **Secure Registration:** Users can create accounts with hashed passwords.  
-- ✅ **JWT-Based Authentication:** Users log in and receive secure, stateless tokens.  
-- ✅ **Profile Management:** View and update user profile details.  
-- ✅ **Secure Logout:** Stateless session — users log out by discarding their token.
+### 🧑‍💻 User Authentication & Management
+- User registration with **email verification** (using logged verification links).
+- Secure password storage with **BCrypt hashing**.
+- **JWT-based authentication** (access + refresh tokens).
+- Login, logout, and token refresh endpoints.
+- Role-based user access (User, TeamLead, Manager, etc.).
+- Profile management & activity tracking (`last_login`, `created_at`, etc.).
 
-### ✅ Task Management
-- 🗂 **CRUD Operations:** Create, Read, Update, Delete tasks.  
-- 🏷 **Task Attributes:** Title, description, due date, and status.  
-- 🔍 **Filter & Search:** Filter by status or search by title/description.  
-- 🕓 **Status Update:** Mark tasks as completed.
+### 📋 Task Management
+- Create, update, delete, and fetch tasks.
+- Assign tasks to users within teams.
+- Filter, sort, and search tasks (by status, due date, assignee, etc.).
+- Task status transitions (Open → In Progress → Completed).
 
-### 👥 Collaboration & Team Features *(Upcoming)*
-- 🧱 Project/Team creation and management.  
-- 📩 Invite users to join projects.  
-- 📎 Comments and attachments for better collaboration.
+### 👥 Team / Project Collaboration
+- Create and manage teams/projects.
+- Invite or remove team members.
+- Assign tasks within a team context.
+- Add comments and file attachments to tasks.
+- Optional extension: real-time notifications and updates (WebSocket-ready).
+
+### 🧱 Architecture
+- Layered modular design:
+  - **Controller Layer** (REST APIs)
+  - **Service Layer** (business logic)
+  - **Repository Layer** (Spring Data JPA)
+  - **Entity & DTO Models**
+  - **Mapper Layer** for conversions
+- Extensible to microservices if needed (Auth, Task, Team).
 
 ---
 
-## 🛠️ Technology Stack
+## ⚙️ Tech Stack
 
 | Layer | Technology |
 |-------|-------------|
-| Backend | Java 17, Spring Boot 3.x |
-| Security | Spring Security 6, JWT |
-| Database | Spring Data JPA (PostgreSQL/MySQL) |
-| Build Tool | Apache Maven |
-| API | RESTful |
+| Language | Java 21 |
+| Framework | Spring Boot 3.x |
+| Security | Spring Security + JWT (HS256) |
+| ORM | Spring Data JPA (Hibernate) |
+| Database | MySQL 8 |
+| Build Tool | Gradle |
+| Validation | Jakarta Validation |
+| Token Management | JJWT (io.jsonwebtoken) |
+| Email Service | Logging stub (prints verification link in logs) |
+| Migrations | Flyway |
+| Logging | SLF4J / Logback |
+| Testing | JUnit + Spring Boot Test |
+
+---
+## 🧩 Project Structure
+com.example.tasktracker
+├── controller
+│ ├── AuthController.java
+│ ├── TaskController.java
+│ ├── TeamController.java
+│ └── ProfileController.java
+│
+├── service
+│ ├── impl
+│ │ ├── AuthServiceImpl.java
+│ │ ├── LoggingEmailService.java
+│ │ ├── TaskServiceImpl.java
+│ │ └── TeamServiceImpl.java
+│ ├── AuthService.java
+│ ├── EmailService.java
+│ ├── TaskService.java
+│ └── TeamService.java
+│
+├── repository
+│ ├── UserRepository.java
+│ ├── TaskRepository.java
+│ ├── TeamRepository.java
+│ ├── RefreshTokenRepository.java
+│ └── VerificationTokenRepository.java
+│
+├── model
+│ ├── entity
+│ │ ├── User.java
+│ │ ├── Task.java
+│ │ ├── Team.java
+│ │ ├── Comment.java
+│ │ ├── Attachment.java
+│ │ └── Role.java
+│ └── dto
+│ ├── UserDto.java
+│ ├── UserRequestDto.java
+│ ├── LoginRequestDto.java
+│ ├── CreateTaskRequest.java
+│ └── TaskResponseDto.java
+│
+├── config
+│ ├── SecurityConfig.java
+│ ├── JwtConfig.java
+│ └── WebMvcConfig.java
+│
+├── util
+│ ├── JwtTokenProvider.java
+│ └── JwtTokenProviderImpl.java
+│
+├── exception
+│ ├── GlobalExceptionHandler.java
+│ ├── NotFoundException.java
+│ └── ValidationException.java
+│
+└── TaskTrackingManagementSystemApplication.java
 
 ---
 
-## 🚀 Getting Started
+## 🧠 Key Workflows
 
-Follow these steps to set up and run the project locally.
+### 🪪 1. Registration & Verification
+1. `POST /api/auth/register` → creates inactive user + verification token.
+2. Check console logs for the **verification link** (e.g., `/api/auth/verify?token=XYZ`).
+3. Call verification endpoint → activates user account.
 
-### 🔧 Prerequisites
-- JDK 17 or higher  
-- Apache Maven  
-- A running SQL database (e.g., PostgreSQL)
+### 🔐 2. Login
+`POST /api/auth/login` → returns access token, refresh token, and user info.
 
-### 📦 Installation & Running
+### ♻️ 3. Token Refresh
+`POST /api/auth/refresh` → returns new access token.
 
-```bash
-# Clone the repository
-git clone https://github.com/hilalsidhic/CollaborativeTaskManagementSystem.git
-cd CollaborativeTaskManagementSystem
+### 🚪 4. Logout
+`POST /api/auth/logout` → revokes refresh token.
 
-# Configure the database
-# Edit src/main/resources/application.properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/taskmaster_db
-spring.datasource.username=your_db_user
-spring.datasource.password=your_db_password
-spring.jpa.hibernate.ddl-auto=update
+### 📋 5. Task CRUD
+- `POST /api/teams/{teamId}/tasks`
+- `GET /api/tasks/{taskId}`
+- `PUT /api/tasks/{taskId}`
+- `DELETE /api/tasks/{taskId}`
 
-# JWT Secret Key
-application.security.jwt.secret-key=your_super_strong_and_long_secret_key_here
-
-# Build and run
-mvn clean install
-mvn spring-boot:run
-```
-
-The app runs at [http://localhost:8080](http://localhost:8080).
+### 👥 6. Teams & Collaboration
+- `POST /api/teams` — create a team.
+- `POST /api/teams/{teamId}/members` — invite members.
+- `POST /api/tasks/{taskId}/comments` — add a comment.
 
 ---
 
-## 🔌 API Endpoints
+## 🧰 Setup & Run Locally
 
-### **Authentication** (`/auth`)
-| Method | Endpoint | Description | Access |
-|--------|-----------|-------------|---------|
-| POST | `/signup` | Register a new user | Public |
-| POST | `/login` | Log in to receive JWT | Public |
+### 1️⃣ Prerequisites
+- Java 21+
+- MySQL 8+
+- Gradle (wrapper included)
+- Postman (for API testing)
 
-### **Profile** (`/profile`)
-| Method | Endpoint | Description | Access |
-|--------|-----------|-------------|---------|
-| GET | `/` | Get logged-in user's profile | Protected |
-| PUT | `/` | Update user's profile | Protected |
+### 2️⃣ Database Setup
+Create a database:
+```sql
+CREATE DATABASE auth_db;
 
-### **Tasks** (`/tasks`) *(To Be Implemented)*
-| Method | Endpoint | Description | Access |
-|--------|-----------|-------------|---------|
-| POST | `/` | Create a task | Protected |
-| GET | `/` | Get all tasks (with filters/search) | Protected |
-| GET | `/{taskId}` | Get specific task details | Protected |
-| PUT | `/{taskId}` | Update a task | Protected |
-| DELETE | `/{taskId}` | Delete a task | Protected |
-| POST | `/{taskId}/complete` | Mark a task as complete | Protected |
-| POST | `/{taskId}/assign/{userId}` | Assign a task to a user | Protected |
-
----
-
-## ⚠️ Error Handling
-
-A global `@ControllerAdvice` handles validation errors, missing resources, and exceptions — returning structured JSON error responses.
-
----
-
-## 🗺 Roadmap
-
-- [ ] Implement task and project endpoints  
-- [ ] Add unit & integration tests (JUnit, Mockito)  
-- [ ] Add WebSocket-based real-time notifications *(optional)*  
-
----
-
-## 🧑‍💻 Contributing
-
-Contributions are welcome!  
-Fork the repo, make your changes, and submit a pull request.
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License** — feel free to use and modify.
-
----
-
-**Made with ❤️ by Hilal**
